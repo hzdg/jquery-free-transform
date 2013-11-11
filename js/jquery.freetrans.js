@@ -141,15 +141,15 @@
 		}
 
 		// translate (aka move)
-		container.bind('mousedown.freetrans', _ifLeft(function(evt) {
+		container.bind('mousedown.freetrans', _ifLeft(_noSelect(function(evt) {
 			var data = sel.data('freetrans');
 			var p = Point(evt.pageX, evt.pageY);
-			var drag = function(evt) {
+			var drag = _noSelect(function(evt) {
 				data.x += evt.pageX - p.x;
 				data.y += evt.pageY - p.y;
 				p = Point(evt.pageX, evt.pageY);
 				_draw(sel, data);
-			};
+			});
 			
 			var up = function(evt) {
 				$(document).unbind('mousemove.freetrans', drag);
@@ -158,10 +158,10 @@
 			
 			$(document).bind('mousemove.freetrans', drag);
 			$(document).bind('mouseup.freetrans', up);
-		}));
+		})));
 		
 		// rotate
-		rotator.bind('mousedown.freetrans', _ifLeft(function(evt) {
+		rotator.bind('mousedown.freetrans', _ifLeft(_noSelect(function(evt) {
 			evt.stopPropagation();
 			
 			var data = sel.data('freetrans'),
@@ -169,7 +169,7 @@
 			pressang = Math.atan2(evt.pageY - cen.y, evt.pageX - cen.x) * 180 / Math.PI;
 			rot = Number(data.angle);
 
-			var drag = function(evt) {
+			var drag = _noSelect(function(evt) {
 				var ang = Math.atan2(evt.pageY - cen.y, evt.pageX - cen.x) * 180 / Math.PI,
 				d = rot + ang - pressang;
 
@@ -179,7 +179,7 @@
 				data._p.rad = d*rad;
 
 				_draw(sel, data);
-			};
+			});
 			
 			var up = function(evt) {
 				$(document).unbind('mousemove.freetrans', drag);
@@ -188,10 +188,10 @@
 			
 			$(document).bind('mousemove.freetrans', drag);
 			$(document).bind('mouseup.freetrans', up);
-		}));
+		})));
 		
 		// scale
-		container.find('.ft-scaler').bind('mousedown.freetrans', _ifLeft(function(evt) {
+		container.find('.ft-scaler').bind('mousedown.freetrans', _ifLeft(_noSelect(function(evt) {
 			evt.stopPropagation();
 			
 			/**
@@ -302,7 +302,7 @@
 				};
 			}
 
-			var drag = function(evt) {				
+			var drag = _noSelect(function(evt) {
 				
 				if (scaleMe) {
 					scaleMe(Point(evt.pageX, evt.pageY));
@@ -341,7 +341,7 @@
 
 					if (positionMe) positionMe();
 				};
-			};
+			});
 			
 			var up = function(evt) {
 				_draw(sel, data);
@@ -351,7 +351,7 @@
 			
 			$(document).bind('mousemove.freetrans', drag);
 			$(document).bind('mouseup.freetrans', up);
-		}));
+		})));
 
 		sel.css({position: 'absolute'});
 	}
@@ -363,6 +363,15 @@
 			}
 		};
 	};
+
+	// Disable selection for drag handlers.
+	function _noSelect(callback) {
+		return function(evt) {
+			evt.preventDefault();
+			evt.stopImmediatePropagation();
+			return callback(evt);
+		}
+	}
 
 	function _destroy(sel) {
 		var data = sel.data('freetrans');
